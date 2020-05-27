@@ -8,6 +8,7 @@ import configureStore from './redux/configureStore'
 import { Provider as ReduxProvider } from 'react-redux'
 
 const store = configureStore()
+// It can be useful to pass initial state into the store here if you're server rendering or initializing you Redux store with data from localStorage, but is usually pass in reducers
 
 render(
   <ReduxProvider store={store}>
