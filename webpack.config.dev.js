@@ -1,4 +1,4 @@
-const webpack = require('webpack')
+const webpack = require('webpack') // Para configurar la variable de ambiente que se utiliza en la API
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 

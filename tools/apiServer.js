@@ -1,4 +1,8 @@
 /*
+This will serve our mock api via Express and json-server
+This file uses Express with JSON Server to host a mock API and
+simulate a database using a JSON file.
+
 This uses json-server, but with the module approach: https://github.com/typicode/json-server#module
 Downside: You can't pass the json-server command line options.
 Instead, can override some defaults by passing a config object to jsonServer.defaults();
