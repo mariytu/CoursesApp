@@ -40,6 +40,7 @@ const CourseForm = ({
         error={errors.author}
       />
 
+      {/* name="category" and value={course.category}.. This convention will allow us to update the corresponding property in state with a single change handler */}
       <TextInput
         name="category"
         label="Category"

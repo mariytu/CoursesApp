@@ -1,82 +1,71 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { connect } from 'react-redux'
-import * as courseActions from '../../redux/actions/courseActions'
-import * as authorActions from '../../redux/actions/authorActions'
+import { loadCourses } from '../../redux/actions/courseActions'
+import { loadAuthors } from '../../redux/actions/authorActions'
 import PropTypes from 'prop-types'
-import { bindActionCreators } from 'redux'
 import CourseList from './CourseList'
 import { Redirect } from 'react-router-dom'
 
-class CoursesPage extends React.Component {
-  state = {
-    redirectToAddCoursePage: false,
-  }
+function CoursesPage({ courses, authors, loadCourses, loadAuthors }) {
+  const [redirectToAddCoursePage, setRedirectToAddCoursePage] = useState(false)
 
-  componentDidMount() {
-    const { courses, authors, actions } = this.props
-
+  useEffect(() => {
     if (courses.length === 0) {
-      actions.loadCourses().catch((error) => {
+      loadCourses().catch((error) => {
         alert('Loading courses failed' + error)
       })
     }
 
     if (authors.length === 0) {
-      actions.loadAuthors().catch((error) => {
+      loadAuthors().catch((error) => {
         alert('Loading authors failed' + error)
       })
     }
-  }
+  }, [])
 
-  render() {
-    return (
-      <>
-        {this.state.redirectToAddCoursePage && <Redirect to="/course" />}
-        <h2>Courses</h2>
+  return (
+    <>
+      {redirectToAddCoursePage && <Redirect to="/course" />}
+      <h2>Courses</h2>
 
-        <button
-          style={{ marginBottom: 20 }}
-          className="btn btn-primary add-course"
-          onClick={() => this.setState({ redirectToAddCoursePage: true })}
-        >
-          Add Course
-        </button>
+      <button
+        style={{ marginBottom: 20 }}
+        className="btn btn-primary add-course"
+        onClick={() => setRedirectToAddCoursePage(true)}
+      >
+        Add Course
+      </button>
 
-        <CourseList courses={this.props.courses} />
-      </>
-    )
-  }
+      <CourseList courses={courses} />
+    </>
+  )
 }
 
 CoursesPage.propTypes = {
   authors: PropTypes.array.isRequired,
   courses: PropTypes.array.isRequired,
-  actions: PropTypes.object.isRequired,
+  loadCourses: PropTypes.func.isRequired,
+  loadAuthors: PropTypes.func.isRequired,
 }
 
-function mapStateToProps(state) {
+function mapStateToProps({ authors, courses }) {
   return {
     courses:
-      state.authors.length === 0
+      authors.length === 0
         ? []
-        : state.courses.map((course) => {
+        : courses.map((course) => {
             return {
               ...course,
-              authorName: state.authors.find((a) => a.id === course.authorId)
-                .name,
+              authorName: authors.find((a) => a.id === course.authorId).name,
             }
           }),
-    authors: state.authors,
+    authors,
   }
 }
 
-function mapDispatchToProps(dispatch) {
-  return {
-    actions: {
-      loadCourses: bindActionCreators(courseActions.loadCourses, dispatch),
-      loadAuthors: bindActionCreators(authorActions.loadAuthors, dispatch),
-    },
-  }
+const mapDispatchToProps = {
+  loadCourses,
+  loadAuthors,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(CoursesPage)

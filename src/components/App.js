@@ -7,6 +7,11 @@ import PageNotFound from './PageNotFound'
 import CoursesPage from './courses/CoursesPage'
 import ManageCoursePage from './courses/ManageCoursePage'
 
+/**
+ *    /course/:slug --> for edit page
+ *    /course --> for create a course
+ *
+ */
 function App() {
   return (
     <div className="container-fluid">
