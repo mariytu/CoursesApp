@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { connect } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { loadCourses, saveCourse } from '../../redux/actions/courseActions'
 import { loadAuthors } from '../../redux/actions/authorActions'
 import PropTypes from 'prop-types'
@@ -8,34 +8,36 @@ import { newCourse } from '../../../tools/mockData'
 import Spinner from '../common/Spinner'
 import { toast } from 'react-toastify'
 
-function ManageCoursePage({
-  courses,
-  authors,
-  loadAuthors,
-  loadCourses,
-  saveCourse,
-  history,
-  ...props
-}) {
-  const [course, setCourse] = useState({ ...props.course })
+function ManageCoursePage({ history, ...props }) {
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
 
+  const dispatch = useDispatch()
+
+  const courses = useSelector((state) => state.courses)
+  const authors = useSelector((state) => state.authors)
+
+  const slug = props.match.params.slug
+  const courseFromStore = useSelector((state) =>
+    slug && courses.length > 0 ? getCourseBySlug(courses, slug) : newCourse
+  )
+  const [course, setCourse] = useState({ ...courseFromStore })
+
   useEffect(() => {
     if (courses.length === 0) {
-      loadCourses().catch((error) => {
+      dispatch(loadCourses()).catch((error) => {
         alert('Loading courses failed' + error)
       })
     } else {
-      setCourse({ ...props.course })
+      setCourse({ ...courseFromStore })
     }
 
     if (authors.length === 0) {
-      loadAuthors().catch((error) => {
+      dispatch(loadAuthors()).catch((error) => {
         alert('Loading authors failed' + error)
       })
     }
-  }, [props.course])
+  }, [courseFromStore])
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -65,7 +67,7 @@ function ManageCoursePage({
 
     setSaving(true)
     try {
-      await saveCourse(course)
+      await dispatch(saveCourse(course))
       toast.success('Course saved.')
       history.push('/courses')
     } catch (error) {
@@ -98,12 +100,6 @@ function ManageCoursePage({
 }
 
 ManageCoursePage.propTypes = {
-  course: PropTypes.object.isRequired,
-  authors: PropTypes.array.isRequired,
-  courses: PropTypes.array.isRequired,
-  loadCourses: PropTypes.func.isRequired,
-  loadAuthors: PropTypes.func.isRequired,
-  saveCourse: PropTypes.func.isRequired,
   history: PropTypes.object.isRequired,
 }
 
@@ -111,21 +107,4 @@ export function getCourseBySlug(courses, slug) {
   return courses.find((course) => course.slug === slug) || null
 }
 
-function mapStateToProps({ courses, authors }, ownProps) {
-  const slug = ownProps.match.params.slug
-  const course =
-    slug && courses.length > 0 ? getCourseBySlug(courses, slug) : newCourse
-  return {
-    course,
-    courses,
-    authors,
-  }
-}
-
-const mapDispatchToProps = {
-  loadCourses,
-  loadAuthors,
-  saveCourse,
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(ManageCoursePage)
+export default ManageCoursePage
