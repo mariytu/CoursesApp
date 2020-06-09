@@ -37,7 +37,7 @@ function ManageCoursePage({
     }
   }, [props.course])
 
-  function handleChange(event) {
+  const handleChange = (event) => {
     const { name, value } = event.target
     setCourse((prevCourse) => ({
       ...prevCourse,
@@ -45,7 +45,8 @@ function ManageCoursePage({
     }))
   }
 
-  function formIsValid() {
+  // Client-Side validation
+  const formIsValid = () => {
     const { title, authorId, category } = course
     const errors = {}
 
@@ -58,19 +59,28 @@ function ManageCoursePage({
     return Object.keys(errors).length === 0
   }
 
-  function handleSave(event) {
+  const handleSave = async (event) => {
     event.preventDefault()
     if (!formIsValid()) return
+
     setSaving(true)
-    saveCourse(course)
+    try {
+      await saveCourse(course)
+      toast.success('Course saved.')
+      history.push('/courses')
+    } catch (error) {
+      setSaving(false)
+      setErrors({ onSave: error.message }) // Server-Side errors
+    }
+    /*saveCourse(course)
       .then(() => {
         toast.success('Course saved.')
         history.push('/courses')
       })
       .catch((error) => {
         setSaving(false)
-        setErrors({ onSave: error.message })
-      })
+        setErrors({ onSave: error.message }) // Server-Side errors
+      })*/
   }
 
   return authors.length === 0 || courses.length === 0 ? (
@@ -101,16 +111,14 @@ export function getCourseBySlug(courses, slug) {
   return courses.find((course) => course.slug === slug) || null
 }
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps({ courses, authors }, ownProps) {
   const slug = ownProps.match.params.slug
   const course =
-    slug && state.courses.length > 0
-      ? getCourseBySlug(state.courses, slug)
-      : newCourse
+    slug && courses.length > 0 ? getCourseBySlug(courses, slug) : newCourse
   return {
     course,
-    courses: state.courses,
-    authors: state.authors,
+    courses,
+    authors,
   }
 }
 
