@@ -1,33 +1,40 @@
-import React, { useState, useEffect } from 'react'
-import { connect } from 'react-redux'
+import React, { useEffect, useState } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { loadCourses, deleteCourse } from '../../redux/actions/courseActions'
 import { loadAuthors } from '../../redux/actions/authorActions'
-import PropTypes from 'prop-types'
+//import PropTypes from 'prop-types'
 import CourseList from './CourseList'
 import { Redirect } from 'react-router-dom'
 import Spinner from '../common/Spinner'
 import { toast } from 'react-toastify'
 
-function CoursesPage({
-  courses,
-  authors,
-  loading,
-  loadCourses,
-  loadAuthors,
-  deleteCourse,
-}) {
+function CoursesPage() {
   const [redirectToAddCoursePage, setRedirectToAddCoursePage] = useState(false)
 
-  // useEffect(async () => { if we want use async/await
+  const dispatch = useDispatch()
+
+  const loading = useSelector((state) => state.apiCallsInProgress > 0)
+  const authors = useSelector((state) => state.authors)
+  const courses = useSelector((state) =>
+    authors.length === 0
+      ? []
+      : state.courses.map((course) => {
+          return {
+            ...course,
+            authorName: authors.find((a) => a.id === course.authorId).name,
+          }
+        })
+  )
+
   useEffect(() => {
     if (courses.length === 0) {
-      loadCourses().catch((error) => {
+      dispatch(loadCourses()).catch((error) => {
         alert('Loading courses failed' + error)
       })
     }
 
     if (authors.length === 0) {
-      loadAuthors().catch((error) => {
+      dispatch(loadAuthors()).catch((error) => {
         alert('Loading authors failed' + error)
       })
     }
@@ -36,7 +43,7 @@ function CoursesPage({
   const handleDeleteCourse = async (course) => {
     toast.success('Course deleted')
     try {
-      await deleteCourse(course)
+      await dispatch(deleteCourse(course))
     } catch (error) {
       toast.error('Delete failed. ' + error.message, { autoClose: false })
     }
@@ -64,6 +71,11 @@ function CoursesPage({
     </>
   )
 }
+
+export default CoursesPage
+
+/*
+// Without Hooks
 
 CoursesPage.propTypes = {
   authors: PropTypes.array.isRequired,
@@ -97,3 +109,4 @@ const mapDispatchToProps = {
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(CoursesPage)
+*/
